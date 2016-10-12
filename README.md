@@ -41,5 +41,5 @@ val fg = FactorGraph(
 )
 ```
 
-where R is some algebra.
+where R is some algebra. The logical factors `TwoChooseOne` and `Equal` can be used off-the-shelf.
 

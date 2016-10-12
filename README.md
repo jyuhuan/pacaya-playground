@@ -18,13 +18,13 @@ where
 To create this factor graph, define variables as follows
 
 ```scala
-val x = BooleanVar("vS")
-val x1 = BooleanVar("vPos")
-val x2 = BooleanVar("vNeg")
+val x = BooleanVar("x")
+val x1 = BooleanVar("x1")
+val x2 = BooleanVar("x2")
 
-val y = BooleanVar("vA")
-val y1 = BooleanVar("vAgt")
-val y2 = BooleanVar("vThm")
+val y = BooleanVar("y")
+val y1 = BooleanVar("y1")
+val y2 = BooleanVar("y2")
 ```
 
 Then, define the factor graph:
@@ -40,4 +40,6 @@ val fg = FactorGraph(
   Equal(x, y)
 )
 ```
+
+where R is some algebra.
 

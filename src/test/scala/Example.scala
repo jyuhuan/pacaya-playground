@@ -1,11 +1,11 @@
+import me.yuhuan.pacaya.playground._
+
 /**
   * Created by Yuhuan Jiang (jyuhuan@gmail.com) on 10/12/2016.
   */
 object Example extends App {
 
-  import me.yuhuan.pacaya.playground._
-
-  implicit val R = LogSignAlgebra
+  implicit val R = RealAlgebra
   implicit val BPStrategy = new BeliefPropagationStrategy {
     def schedule = BeliefPropagationSchedule.Treelike
     def updatingOrder = BeliefPropagationUpdatingOrder.Sequential
@@ -15,43 +15,34 @@ object Example extends App {
     def algebra = R
   }
 
-  val vS = BooleanVar("s")
-  val vP = BooleanVar("p")
-  val vN = BooleanVar("n")
 
-  val fP = Factor(vS)(R.one, R.fromReal(5.0))
-  val fN = Factor(vP)(R.one, R.one)
-  val fIsExactly1 = Factor.withConfigs(vS, vP, vN){ conf =>
-    (conf(vS), conf(vP), conf(vN)) match {
-      case (0, 0, 0) => R.one
-      case (0, 0, 1) => R.zero
-      case (0, 1, 0) => R.zero
-      case (0, 1, 1) => R.one
-      case (1, 0, 0) => R.zero
-      case (1, 0, 1) => R.one
-      case (1, 1, 0) => R.zero
-      case (1, 1, 1) => R.zero
-    }
-  }
+  val vS = BooleanVar("vS")
+  val vPos = BooleanVar("vPos")
+  val vNeg = BooleanVar("vNeg")
+  val vA = BooleanVar("vA")
+  val vAgt = BooleanVar("vAgt")
+  val vThm = BooleanVar("vThm")
 
-  val fg = FactorGraph(fP, fN, fIsExactly1)
 
-  val id1 = vS.v.getId
-  val id2 = vP.v.getId
-  val id3 = vN.v.getId
-
+  val fg = FactorGraph(
+    Factor(vPos)(R.one, R.fromReal(2)),
+    Factor(vNeg)(R.one, R.fromReal(0.5)),
+    TwoChooseOne(vS, vPos, vNeg),
+    Factor(vAgt)(R.one, R.fromReal(0.5)),
+    Factor(vThm)(R.one, R.fromReal(2.0)),
+    TwoChooseOne(vA, vAgt, vThm),
+    Equal(vA, vS)
+  )
 
   val lbp = BeliefPropagation(fg)
   lbp.run()
 
-  val b1 = lbp.marginalsOf(vS)
-  val b2 = lbp.marginalsOf(vP)
-  val b3 = lbp.marginalsOf(vN)
-
-
-  println(fg.fg)
+  val bS = lbp.marginalsOf(vS)
+  val bPos = lbp.marginalsOf(vPos)
+  val bNeg = lbp.marginalsOf(vNeg)
+  val bA = lbp.marginalsOf(vA)
+  val bAgt = lbp.marginalsOf(vAgt)
+  val bThm = lbp.marginalsOf(vThm)
 
   val bp = 0
-
-
 }

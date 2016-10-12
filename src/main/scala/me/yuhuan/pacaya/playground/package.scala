@@ -75,6 +75,7 @@ package object playground {
 
   implicit class VarTensor(val t: m.VarTensor) extends AnyVal {
     def vars: VarSet = t.getVars
+    def argmaxConfigId: Int = t.getArgmaxConfigId
   }
 
   implicit class Factor(val f: m.Factor) extends AnyVal {
@@ -92,11 +93,17 @@ package object playground {
   implicit class ExplicitFactor(val f: m.ExplicitFactor) extends AnyVal {
     def update(idx: Int, v: Double) = f.setValue(idx, v)
   }
+
+  /**
+    * Fixes an important issue in the original Pacaya library.
+    * See <a href="https://github.com/mgormley/pacaya/issues/2#issuecomment-253317931">Issue#2</a>.
+    */
   object ExplicitFactor {
     def apply(vs: Var*)(rs: Double*)(implicit R: u.semiring.Algebra): ExplicitFactor = {
       val result = new m.ExplicitFactor(VarSet(vs: _*).vs)
       var i = 0; while (i < result.size) {
-        result.setValue(i, rs(i))
+        val logValue = R.toLogProb(rs(i))
+        result.setValue(i, logValue)
         i += 1
       }
       result
@@ -165,6 +172,7 @@ package object playground {
         maxIterations = S.maxNumIteration
         normalizeMessages = S.shouldNormalizeMessages
         convergenceThreshold = S.convergenceThreshold
+        s = S.algebra
       }
       val bp = new i.BeliefPropagation(fg.fg, prm)
       bp
@@ -213,7 +221,7 @@ package object playground {
     }
   }
 
-  def TwoChooseOne(y: Var, x1: Var, x2: Var)(implicit R: u.semiring.Algebra) = ExplicitFactor.withConfigs(y, x1, x2){ conf =>
+  def IsAtMostOne2(y: Var, x1: Var, x2: Var)(implicit R: u.semiring.Algebra) = ExplicitFactor.withConfigs(y, x1, x2){ conf =>
     (conf(y), conf(x1), conf(x2)) match {
       case (0, 0, 0) => R.one
       case (0, 0, 1) => R.zero

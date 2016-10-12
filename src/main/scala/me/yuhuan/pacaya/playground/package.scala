@@ -201,4 +201,31 @@ package object playground {
 
   //endregion
 
+
+  //region Convenient factors
+
+  def Equal(x1: Var, x2: Var)(implicit R: u.semiring.Algebra) = ExplicitFactor.withConfigs(x1, x2){ conf =>
+    (conf(x1), conf(x2)) match {
+      case (0, 0) => R.one
+      case (0, 1) => R.zero
+      case (1, 0) => R.zero
+      case (1, 1) => R.one
+    }
+  }
+
+  def TwoChooseOne(y: Var, x1: Var, x2: Var)(implicit R: u.semiring.Algebra) = ExplicitFactor.withConfigs(y, x1, x2){ conf =>
+    (conf(y), conf(x1), conf(x2)) match {
+      case (0, 0, 0) => R.one
+      case (0, 0, 1) => R.zero
+      case (0, 1, 0) => R.zero
+      case (0, 1, 1) => R.zero
+      case (1, 0, 0) => R.zero
+      case (1, 0, 1) => R.one
+      case (1, 1, 0) => R.one
+      case (1, 1, 1) => R.zero
+    }
+  }
+
+  //endregion
+
 }

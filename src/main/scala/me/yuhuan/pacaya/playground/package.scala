@@ -67,6 +67,13 @@ package object playground {
     def vars: VarSet = vc.getVars
     def apply(v: Var): Int = stateIdOf(v)
   }
+  object VarConfig {
+    def apply(assignments: (Var, Int)*): VarConfig = {
+      val vc = new m.VarConfig()
+      assignments.foreach { case (v, i) => vc.put(v.v, i) }
+      new VarConfig(vc)
+    }
+  }
 
   //endregion
 
@@ -112,7 +119,8 @@ package object playground {
     def tabulate(vs: Var*)(f: Int => Double)(implicit R: u.semiring.Algebra): ExplicitFactor = {
       val result = new m.ExplicitFactor(VarSet(vs: _*).vs)
       var i = 0; while (i < result.size) {
-        result.setValue(i, f(i))
+        val logValue = R.toLogProb(f(i))
+        result.setValue(i, logValue)
         i += 1
       }
       result
@@ -123,7 +131,8 @@ package object playground {
       val vars = result.getVars
       var configIdx = 0; while (configIdx < result.size) {
         val config = vars.getVarConfig(configIdx)
-        result.setValue(configIdx, f(config))
+        val logValue = R.toLogProb(f(config))
+        result.setValue(configIdx, logValue)
         configIdx += 1
       }
       result
@@ -137,7 +146,7 @@ package object playground {
   //region Factor graphs
 
   implicit class FactorGraph(val fg: m.FactorGraph) extends AnyVal {
-
+    def clampedOn(vc: VarConfig): FactorGraph = fg.getClamped(vc.vc)
   }
   object FactorGraph {
     def apply(fs: Factor*): FactorGraph = {

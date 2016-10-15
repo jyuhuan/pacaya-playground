@@ -7,6 +7,7 @@ import edu.jhu.pacaya.gm.{model => m}
 import edu.jhu.pacaya.gm.{data => d}
 import edu.jhu.pacaya.{util => u}
 import edu.jhu.pacaya.gm.{inf => i}
+import edu.jhu.pacaya.gm.{train => t}
 
 /**
   * Created by Yuhuan Jiang (jyuhuan@gmail.com) on 10/11/2016.
@@ -16,6 +17,7 @@ package object playground {
   //region Common variable domains
 
   val BooleanDomain = Seq("F", "T")
+  val PolarityDomain = Seq("Pos", "Neg", "Neu")
 
   //endregion
 
@@ -35,29 +37,57 @@ package object playground {
     def name: String = v.getName
     def states: Seq[String] = v.getStateNames
   }
+
   object Var {
+    /**
+      * @note This is a shortcut for creating a [[PredictedVar]].
+      */
     def apply(name: String)(states: String*): Var = PredictedVar(name)(states: _*)
   }
+  object PredictedVar {
+    /**
+      * Creates a predicted variable.
+      * Predicted variables are observed in the training data, but not in the testing data.
+      */
+    def apply(name: String)(states: String*): Var = new m.Var(m.Var.VarType.PREDICTED, states.length, name, states)
+  }
+
   object BooleanVar {
+    /**
+      * @note This is a shortcut for creating a [[BooleanPredictedVar]].
+      */
     def apply(name: String): Var = BooleanPredictedVar(name)
   }
 
-  object PredictedVar {
-    def apply(name: String)(states: String*): Var = new m.Var(m.Var.VarType.PREDICTED, states.length, name, states)
-  }
   object BooleanPredictedVar {
+    /**
+      * Creates a predicted Boolean variable.
+      * Predicted variables are observed in the training data, but not in the testing data.
+      */
     def apply(name: String): Var = PredictedVar(name)(BooleanDomain: _*)
   }
 
   object LatentVar {
+    /**
+      * Creates a latent variable.
+      * Latent variables are neither observed in the training data, nor in the testing data.
+      */
     def apply(name: String)(states: String*): Var = new m.Var(m.Var.VarType.LATENT, states.length, name, states)
   }
+
   object BooleanLatentVar {
+    /**
+      * Creates a latent Boolean variable.
+      * Latent variables are neither observed in the training data, nor in the testing data.
+      */
     def apply(name: String): Var = LatentVar(name)(BooleanDomain: _*)
   }
 
   implicit class VarSet(val vs: m.VarSet) extends AnyVal
   object VarSet {
+    /**
+      * Creates an ordered set of variables.
+      */
     def apply(vs: Var*): VarSet = new m.VarSet(vs.map(_.v): _*)
   }
 
@@ -68,6 +98,13 @@ package object playground {
     def apply(v: Var): Int = stateIdOf(v)
   }
   object VarConfig {
+    /**
+      * Creates a configuration of a set of variables.
+      * @example {{{
+      *         val vc = VarConfig(x1 -> 1, x2 -> 0, x3 -> 1)
+      *         // The line above assigns [1 0 1] to [x1 x2 x3].
+      * }}}
+      */
     def apply(assignments: (Var, Int)*): VarConfig = {
       val vc = new m.VarConfig()
       assignments.foreach { case (v, i) => vc.put(v.v, i) }
@@ -219,6 +256,12 @@ package object playground {
 
   implicit class LabeledExample(val e: d.LabeledFgExample) extends AnyVal
   implicit class UnlabeledExample(val e: d.UnlabeledFgExample) extends AnyVal
+
+
+
+  implicit class CrfTrainer(val self: t.CrfTrainer) extends AnyVal {
+    def train(data: )
+  }
 
   //endregion
 

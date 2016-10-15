@@ -15,34 +15,33 @@ object Example extends App {
     def algebra = R
   }
 
-
-  val vS = BooleanVar("vS")
-  val vPos = BooleanVar("vPos")
-  val vNeg = BooleanVar("vNeg")
-  val vA = BooleanVar("vA")
-  val vAgt = BooleanVar("vAgt")
-  val vThm = BooleanVar("vThm")
+  val x = BooleanVar("x")
+  val x1 = BooleanVar("x1")
+  val x2 = BooleanVar("x2")
+  val y = BooleanVar("y")
+  val y1 = BooleanVar("y1")
+  val y2 = BooleanVar("y2")
 
 
   val fg = FactorGraph(
-    Factor(vPos)(R.one, R.fromReal(2)),
-    Factor(vNeg)(R.one, R.fromReal(0.5)),
-    TwoChooseOne(vS, vPos, vNeg),
-    Factor(vAgt)(R.one, R.fromReal(0.5)),
-    Factor(vThm)(R.one, R.fromReal(2.0)),
-    TwoChooseOne(vA, vAgt, vThm),
-    Equal(vA, vS)
+    Factor(x1)(R.one, R.fromReal(1)),
+    Factor(x2)(R.one, R.fromReal(1)),
+    IsAtMostOne2(x, x1, x2),
+    Factor(y1)(R.one, R.fromReal(0.5)),
+    Factor(y2)(R.one, R.one),
+    IsAtMostOne2(y, y1, y2),
+    Equal(y, x)
   )
 
-  val lbp = BeliefPropagation(fg)
+  val lbp = BeliefPropagation(fg clampedOn VarConfig(x1 -> 1, y2 -> 0))
   lbp.run()
 
-  val bS = lbp.marginalsOf(vS)
-  val bPos = lbp.marginalsOf(vPos)
-  val bNeg = lbp.marginalsOf(vNeg)
-  val bA = lbp.marginalsOf(vA)
-  val bAgt = lbp.marginalsOf(vAgt)
-  val bThm = lbp.marginalsOf(vThm)
+  val bS = lbp.marginalsOf(x)
+  val bPos = lbp.marginalsOf(x1)
+  val bNeg = lbp.marginalsOf(x2)
+  val bA = lbp.marginalsOf(y)
+  val bAgt = lbp.marginalsOf(y1)
+  val bThm = lbp.marginalsOf(y2)
 
   val bp = 0
 }

@@ -43,3 +43,9 @@ val fg = FactorGraph(
 
 where R is some algebra. The logical factors `TwoChooseOne` and `Equal` can be used off-the-shelf.
 
+If the variables <var>X</var><sub>1</sub> and <var>Y</var><sub>2</sub> are clamped to a certain value (e.g., 1 and 0), we can simple write:
+
+```scala
+val fg2 = fg clampedOn VarConfig(x1 -> 1, y2 -> 0)
+```
+

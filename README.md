@@ -33,10 +33,10 @@ Then, define the factor graph:
 val fg = FactorGraph(
   Factor(x1)(R.one, R.fromReal(2)),
   Factor(x2)(R.one, R.fromReal(0.5)),
-  TwoChooseOne(x, x1, x2),
+  IsAtMostOne(x, x1, x2),
   Factor(y1)(R.one, R.fromReal(0.5)),
   Factor(y2)(R.one, R.fromReal(2.0)),
-  TwoChooseOne(y, y1, y2),
+  IsAtMostOne(y, y1, y2),
   Equal(x, y)
 )
 ```

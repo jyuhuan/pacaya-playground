@@ -6,7 +6,7 @@ __Pacaya Playground__ provides usage for Scala users of the [Pacaya](https://git
 
 Consider the following factor graph
 
-<img src="http://yuhuan.me/resource/img/pacaya-playground-example.png" width="550" />
+<img src="http://yuhuan.me/resource/img/pacaya-playground-example-graph.png" width="550" />
 
 where
 - All variables are Boolean.

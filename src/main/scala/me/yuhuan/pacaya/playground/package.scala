@@ -94,7 +94,7 @@ package object playground {
     def apply(vs: Var*)(rs: Double*)(implicit R: u.semiring.Algebra) = ExplicitFactor(vs: _*)(rs: _*)(R)
     def tabulate(vs: Var*)(f: Int => Double)(implicit R: u.semiring.Algebra) = ExplicitFactor.tabulate(vs: _*)(f)(R)
     def withConfigs(vs: Var*)(f: VarConfig => Double)(implicit R: u.semiring.Algebra) = ExplicitFactor.withConfigs(vs: _*)(f)(R)
-    def ones(vs: Var*)(implicit R: u.semiring.Algebra) = ExplicitFactor.ones
+    def ones(vs: Var*)(implicit R: u.semiring.Algebra) = ExplicitFactor.ones(vs: _*)(R)
   }
 
 

@@ -10,8 +10,8 @@ Consider the following factor graph
 
 where
 - All variables are Boolean.
-- φ<sub>Choose1</sub>(X, X<sub>1</sub>, X<sub>2</sub>) is a factor that connects X and X<sub>1</sub> and X<sub>2</sub>. It puts a hard constraint that when X is true, exactly one of X<sub>1</sub> and X<sub>2</sub> should be true, and if X is false, neither of X<sub>1</sub> or X<sub>2</sub> can be true.   
-  φ<sub>Choose1</sub>(Y, Y<sub>1</sub>, Y<sub>2</sub>) is similar. 
+- φ<sub>IsAtMost1</sub>(X, X<sub>1</sub>, X<sub>2</sub>) is a factor that connects X and X<sub>1</sub> and X<sub>2</sub>. It puts a hard constraint that when X is true, exactly one of X<sub>1</sub> and X<sub>2</sub> should be true, and if X is false, neither of X<sub>1</sub> or X<sub>2</sub> can be true.   
+  φ<sub>IsAtMost1</sub>(Y, Y<sub>1</sub>, Y<sub>2</sub>) is similar. 
 - φ<sub>Equal</sub>(X, Y) forces X and Y to have the same value.
 - Unary factors control the local opinions of individual variables.
 

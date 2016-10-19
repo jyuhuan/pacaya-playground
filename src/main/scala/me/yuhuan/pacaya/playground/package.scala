@@ -1,13 +1,16 @@
 package me.yuhuan.pacaya
 
+import edu.jhu.pacaya.gm.data._
+import edu.jhu.pacaya.gm.model._
+
 import scala.math._
 import scala.collection.JavaConversions._
-import edu.jhu.{pacaya => p}
 import edu.jhu.pacaya.gm.{model => m}
 import edu.jhu.pacaya.gm.{data => d}
 import edu.jhu.pacaya.{util => u}
 import edu.jhu.pacaya.gm.{inf => i}
 import edu.jhu.pacaya.gm.{train => t}
+import edu.jhu.{prim => p}
 
 /**
   * Created by Yuhuan Jiang (jyuhuan@gmail.com) on 10/11/2016.
@@ -209,8 +212,8 @@ package object playground {
     def marginalsOf(f: Factor): VarTensor = bp.getMarginals(f.f)
   }
   object BeliefPropagation {
-    def apply(fg: FactorGraph)(implicit S: BeliefPropagationStrategy): BeliefPropagation = {
-      val prm = new i.BeliefPropagation.BeliefPropagationPrm {
+    private[playground] def BPStrategyToBPPrm(S: BeliefPropagationStrategy): i.BeliefPropagation.BeliefPropagationPrm = {
+      new i.BeliefPropagation.BeliefPropagationPrm {
         schedule = S.schedule match {
           case BeliefPropagationSchedule.Random => i.BeliefPropagation.BpScheduleType.RANDOM
           case BeliefPropagationSchedule.Treelike => i.BeliefPropagation.BpScheduleType.TREE_LIKE
@@ -224,6 +227,10 @@ package object playground {
         convergenceThreshold = S.convergenceThreshold
         s = S.algebra
       }
+    }
+
+    def apply(fg: FactorGraph)(implicit S: BeliefPropagationStrategy): BeliefPropagation = {
+      val prm = BPStrategyToBPPrm(S)
       val bp = new i.BeliefPropagation(fg.fg, prm)
       bp
     }
@@ -241,7 +248,36 @@ package object playground {
   //endregion
 
 
+  //region Basic Math Structures
+
+  implicit class IntDoubleVector(val self: p.vector.IntDoubleVector) extends AnyVal {
+    def numImplicitEntries: Int = self.getNumImplicitEntries
+    def boundSize: Int = numImplicitEntries // just an alias
+  }
+  object IntDoubleVector {
+    def apply(vs: Double*): IntDoubleVector = Dense(vs: _*)
+    def Dense(vs: Double*): IntDoubleVector = new p.vector.IntDoubleDenseVector(vs.toArray)
+    def Sparse(pairs: (Int, Double)*): IntDoubleVector = new p.vector.IntDoubleHashVector(pairs.map(_._1).toArray, pairs.map(_._2).toArray)
+    def DenseZeros(dim: Int): IntDoubleVector = new p.vector.IntDoubleDenseVector(Array.ofDim[Double](dim))
+    //def random
+  }
+
+  //endregion
+
+
+
   //region Everything about training
+
+  implicit class FactorGraphModel(val self: m.FgModel) extends AnyVal
+  object FactorGraphModel {
+    def apply(numParams: Int): FactorGraphModel = new FgModel(numParams)
+    def apply(θ: IntDoubleVector): FactorGraphModel = {
+      val m = new FgModel(θ.boundSize)
+      m.setParams(θ.self)
+      m
+    }
+    def apply(θ: Double*): FactorGraphModel = apply(IntDoubleVector.Dense(θ: _*))
+  }
 
   implicit class MemoryExampleStore(val es: d.FgExampleMemoryStore) extends AnyVal
   object MemoryExampleStore {
@@ -254,13 +290,44 @@ package object playground {
 
   implicit class DiskExampleStore(val es: d.FgExampleDiskStore) extends AnyVal
 
+  object ExampleStore {
+    /**
+      * Defaults to [[MemoryExampleStore]]
+      */
+    def apply(es: LabeledExample*): MemoryExampleStore = {
+      val result = new d.FgExampleMemoryStore
+      es.foreach(e => result.add(e.e))
+      result
+    }
+  }
+
   implicit class LabeledExample(val e: d.LabeledFgExample) extends AnyVal
+  object LabeledExample {
+    def apply(fg: FactorGraph, vc: VarConfig): LabeledExample = new LabeledFgExample(fg.fg, vc.vc)
+    def apply(fg: FactorGraph)(assignments: (Var, Int)*): LabeledExample = apply(fg, VarConfig(assignments: _*))
+
+  }
+
   implicit class UnlabeledExample(val e: d.UnlabeledFgExample) extends AnyVal
 
-
+  trait CrfTrainingStrategy {
+    def regularizer: edu.jhu.hlt.optimize.function.Regularizer
+  }
 
   implicit class CrfTrainer(val self: t.CrfTrainer) extends AnyVal {
-    def train(data: )
+    def train(model: FactorGraphModel, data: MemoryExampleStore): Unit = {
+      self.train(model.self, data.es)
+    }
+  }
+  object CrfTrainer {
+    def apply()(implicit TS: CrfTrainingStrategy, BS: BeliefPropagationStrategy): CrfTrainer = {
+      val prm = new t.CrfTrainer.CrfTrainerPrm {
+        infFactory = BeliefPropagation.BPStrategyToBPPrm(BS)
+        regularizer = TS.regularizer
+        trainer = t.CrfTrainer.Trainer.CLL //TODO: allow ERMA
+      }
+      new t.CrfTrainer(prm)
+    }
   }
 
   //endregion
